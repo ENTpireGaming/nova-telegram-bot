@@ -29,8 +29,16 @@ def main():
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
-    updater.start_polling(drop_pending_updates=True)
+
+    # ─── Webhook server ────────────────────────────────────
+    updater.start_webhook(
+        listen="0.0.0.0",      # bind on all interfaces
+        port=10000,            # match the port we expose
+        url_path=TELEGRAM_TOKEN
+    )
+    updater.bot.set_webhook(f"https://{RENDER_EXTERNAL_URL}/{TELEGRAM_TOKEN}")
     updater.idle()
+
 
 if __name__ == "__main__":
     main()
