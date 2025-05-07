@@ -25,17 +25,24 @@ def echo(update, context):
     update.message.reply_text(reply)
 
 def main():
-    # ─── Webhook server (Telegram only allows ports 80, 88, 443, 8443) ──
-     port = int(os.environ.get("PORT", "8443"))
-     updater.start_webhook(
-         listen="0.0.0.0",
-         port=port,
-         url_path=TELEGRAM_TOKEN
-     )
-     # RENDER_EXTERNAL_URL is set by Render to your public URL
-     external = os.environ["RENDER_EXTERNAL_URL"]
-     updater.bot.set_webhook(f"https://{external}/{TELEGRAM_TOKEN}")
+    updater = Updater(TELEGRAM_TOKEN, use_context=True)
+    dp = updater.dispatcher
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+
+    # ─── Webhook server (Telegram only allows ports 80, 88, 443 or 8443) ──
+    port = int(os.environ.get("PORT", "8443"))
+    updater.start_webhook(
+        listen="0.0.0.0",
+        port=port,
+        url_path=TELEGRAM_TOKEN
+    )
+    # RENDER_EXTERNAL_URL is set by Render to your public URL
+    external = os.environ["RENDER_EXTERNAL_URL"]
+    updater.bot.set_webhook(f"https://{external}/{TELEGRAM_TOKEN}")
+
     updater.idle()
+
 
 
 if __name__ == "__main__":
